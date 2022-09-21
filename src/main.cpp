@@ -76,7 +76,7 @@ String FileName;
 int SecCount = 0;
 unsigned long previousMillis = 0; 
 const long interval = 1000;
-
+bool CardPresent = false;
 
 /*
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
@@ -328,16 +328,26 @@ void setup() {
     pinMode(SD_ss, OUTPUT); //HSPI SS  set slave select pins as output
 
     if (!SD.begin(SD_ss, SDSPI)) {
-        Serial.println("Card Mount Failed");
-        return;
+        Serial.println("Card Mount Failed"); 
     }
-    uint8_t cardType = SD.cardType();
-    if(cardType == CARD_NONE){
-        Serial.println("No SD card attached");
-        return;
+    else{
+        uint8_t cardType = SD.cardType();
+        if(cardType == CARD_NONE){
+            Serial.println("No SD card attached");
+        }
+        else{
+            CardPresent = true;
+        }
+        
     }
-    FileName = "/" + String(esp_random()) + "log.csv";
-    createLog(SD, FileName);
+
+    if(CardPresent == true){
+        FileName = "/" + String(esp_random()) + "log.csv";
+        createLog(SD, FileName);
+    }
+
+
+    
     
 
     pinMode(a0, INPUT);
@@ -407,7 +417,10 @@ void slowLoop(){
     voltage = ((analogRead(a0)*.0025)-.789);
     //Serial.print("Batter Voltage: ");
     //Serial.println(batv);
-    logdata(SD, FileName);
+    if(CardPresent == true){
+        logdata(SD, FileName);
+    }
+    
     }
     
 }
